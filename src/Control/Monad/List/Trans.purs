@@ -17,6 +17,8 @@ module Control.Monad.List.Trans
   , prepend
   , prepend'
   , repeat
+  , runListT
+  , runLazyListT
   , scanl
   , singleton
   , tail
@@ -42,6 +44,8 @@ import Control.MonadZero (class MonadZero)
 import Control.Plus (class Plus)
 
 import Data.Lazy (Lazy, defer, force)
+import Data.List as L
+import Data.List.Lazy as LL
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Monoid (class Monoid)
 import Data.Newtype (class Newtype)
@@ -66,9 +70,12 @@ data Step a s
   | Skip (Lazy s)
   | Done
 
--- | Run a computation in the `ListT` monad.
-runListT :: forall f a. ListT f a -> f (Step a (ListT f a))
-runListT (ListT fa) = fa
+runListT :: forall f a. Monad f => ListT f a -> f (L.List a)
+runListT = foldl (flip L.Cons) L.Nil
+
+runLazyListT :: forall f a. Monad f => ListT f a -> f (LL.List a)
+runLazyListT = foldl (flip LL.cons) LL.nil
+
 
 -- | The empty list.
 nil :: forall f a. Applicative f => ListT f a
